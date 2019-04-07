@@ -14,6 +14,7 @@ namespace Symfony\Bundle\MakerBundle;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\MakerBundle\Exception\RuntimeCommandException;
 use Symfony\Bundle\MakerBundle\Util\ClassNameDetails;
+use Symfony\Bundle\MakerBundle\Util\NamespacesHelper;
 
 /**
  * @author Javier Eguiluz <javier.eguiluz@gmail.com>
@@ -24,13 +25,13 @@ class Generator
     private $fileManager;
     private $twigHelper;
     private $pendingOperations = [];
-    private $namespacePrefix;
+    private $namespacesHelper;
 
-    public function __construct(FileManager $fileManager, string $namespacePrefix)
+    public function __construct(FileManager $fileManager, NamespacesHelper $namespacesHelper)
     {
         $this->fileManager = $fileManager;
         $this->twigHelper = new GeneratorTwigHelper($fileManager);
-        $this->namespacePrefix = trim($namespacePrefix, '\\');
+        $this->namespacesHelper = $namespacesHelper;
     }
 
     /**
@@ -133,7 +134,7 @@ class Generator
      */
     public function createClassNameDetails(string $name, string $namespacePrefix, string $suffix = '', string $validationErrorMessage = ''): ClassNameDetails
     {
-        $fullNamespacePrefix = $this->namespacePrefix.'\\'.$namespacePrefix;
+        $fullNamespacePrefix = $this->namespacesHelper->getRootNamespace().'\\'.$namespacePrefix;
         if ('\\' === $name[0]) {
             // class is already "absolute" - leave it alone (but strip opening \)
             $className = substr($name, 1);
@@ -209,9 +210,14 @@ class Generator
         $this->pendingOperations = [];
     }
 
+    public function getNamespacesHelper(): NamespacesHelper
+    {
+        return $this->namespacesHelper;
+    }
+
     public function getRootNamespace(): string
     {
-        return $this->namespacePrefix;
+        return $this->namespacesHelper->getRootNamespace();
     }
 
     public function generateController(string $controllerClassName, string $controllerTemplatePath, array $parameters = []): string

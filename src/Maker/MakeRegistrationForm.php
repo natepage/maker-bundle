@@ -180,7 +180,7 @@ final class MakeRegistrationForm extends AbstractMaker
         $userClass = $input->getArgument('user-class');
         $userClassNameDetails = $generator->createClassNameDetails(
             '\\'.$userClass,
-            'Entity\\'
+            $generator->getNamespacesHelper()->getEntityNamespace()
         );
 
         // 1) Generate the form class
@@ -194,7 +194,7 @@ final class MakeRegistrationForm extends AbstractMaker
         // 2) Generate the controller
         $controllerClassNameDetails = $generator->createClassNameDetails(
             'RegistrationController',
-            'Controller\\'
+            $generator->getNamespacesHelper()->getControllerNamespace()
         );
 
         $authenticatorClassName = $input->getOption('auto-login-authenticator');
@@ -289,7 +289,7 @@ final class MakeRegistrationForm extends AbstractMaker
     {
         $formClassDetails = $generator->createClassNameDetails(
             'RegistrationFormType',
-            'Form\\'
+            $generator->getNamespacesHelper()->getFormNamespace()
         );
 
         $formFields = [
