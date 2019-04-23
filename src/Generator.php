@@ -27,11 +27,21 @@ class Generator
     private $pendingOperations = [];
     private $namespacesHelper;
 
-    public function __construct(FileManager $fileManager, NamespacesHelper $namespacesHelper)
+    public function __construct(FileManager $fileManager, $namespacesHelper)
     {
         $this->fileManager = $fileManager;
         $this->twigHelper = new GeneratorTwigHelper($fileManager);
-        $this->namespacesHelper = $namespacesHelper;
+
+        if (!$namespacesHelper instanceof NamespacesHelper && !\is_string($namespacesHelper)) {
+            throw new \InvalidArgumentException(sprintf('$namespacesHelper must be either a "string" or an instance of "%s", "%s" given', NamespacesHelper::class, \gettype($namespacesHelper)));
+        }
+
+        if (\is_string($namespacesHelper)) {
+            @trigger_error('Passing a "string" as 2nd argument is deprecated since version 1.11.7.', E_USER_DEPRECATED);
+            $this->namespacesHelper = new NamespacesHelper(['root_namespace' => $namespacesHelper]);
+        } else {
+            $this->namespacesHelper = $namespacesHelper;
+        }
     }
 
     /**

@@ -25,24 +25,6 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
  */
 class MakerExtension extends Extension
 {
-    /** @var string[] */
-    private static $namespaces = [
-        'root_namespace',
-        'command_namespace',
-        'controller_namespace',
-        'entity_namespace',
-        'fixtures_namespace',
-        'form_namespace',
-        'functional_test_namespace',
-        'repository_namespace',
-        'security_namespace',
-        'serializer_namespace',
-        'subscriber_namespace',
-        'twig_namespace',
-        'unit_test_namespace',
-        'validator_namespace',
-    ];
-
     /**
      * {@inheritdoc}
      */
@@ -56,10 +38,7 @@ class MakerExtension extends Extension
         $config = $this->processConfiguration($configuration, $configs);
 
         $namespacesHelperDefinition = $container->getDefinition('maker.namespaces_helper');
-
-        foreach (static::$namespaces as $index => $namespace) {
-            $namespacesHelperDefinition->replaceArgument($index, trim($config[$namespace], '\\'));
-        }
+        $namespacesHelperDefinition->replaceArgument(0, $config);
 
         $container->registerForAutoconfiguration(MakerInterface::class)
             ->addTag(MakeCommandRegistrationPass::MAKER_TAG);
