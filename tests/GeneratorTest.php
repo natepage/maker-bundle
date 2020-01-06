@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony MakerBundle package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Bundle\MakerBundle\Tests;
 
 use PHPUnit\Framework\TestCase;
@@ -32,7 +41,7 @@ class GeneratorTest extends TestCase
             'Controller\\',
             '',
             'App\\Controller\\Foo',
-            'Foo'
+            'Foo',
         ];
 
         yield 'with_suffix' => [
@@ -40,7 +49,7 @@ class GeneratorTest extends TestCase
             'Controller',
             'Controller',
             'App\\Controller\\FooController',
-            'FooController'
+            'FooController',
         ];
 
         yield 'custom_class' => [
@@ -48,7 +57,7 @@ class GeneratorTest extends TestCase
             'Controller',
             '',
             'Foo\Bar\Baz',
-            'Bar\Baz'
+            'Bar\Baz',
         ];
 
         yield 'custom_class_with_suffix' => [
@@ -56,7 +65,7 @@ class GeneratorTest extends TestCase
             'Controller',
             'Controller',
             'Foo\Bar\Baz',
-            'Bar\Baz'
+            'Bar\Baz',
         ];
 
         yield 'enty_fqcn' => [
@@ -64,7 +73,7 @@ class GeneratorTest extends TestCase
             'Entity\\',
             '',
             'App\\Entity\\User',
-            'User'
+            'User',
         ];
     }
 }

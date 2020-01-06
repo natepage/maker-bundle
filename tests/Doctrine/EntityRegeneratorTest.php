@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony MakerBundle package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Bundle\MakerBundle\Tests\Doctrine;
 
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
@@ -45,12 +54,12 @@ class EntityRegeneratorTest extends TestCase
     {
         yield 'regenerate_no_overwrite' => [
             'expected_no_overwrite',
-            false
+            false,
         ];
 
         yield 'regenerate_overwrite' => [
             'expected_overwrite',
-            true
+            true,
         ];
     }
 
@@ -82,7 +91,7 @@ class EntityRegeneratorTest extends TestCase
         $autoloaderUtil = $this->createMock(AutoloaderUtil::class);
         $autoloaderUtil->expects($this->any())
             ->method('getPathForFutureClass')
-            ->willReturnCallback(function($className) use ($tmpDir, $targetDirName) {
+            ->willReturnCallback(function ($className) use ($tmpDir, $targetDirName) {
                 $shortClassName = str_replace('Symfony\Bundle\MakerBundle\Tests\tmp\\'.$targetDirName.'\src\\', '', $className);
 
                 // strip the App\, change \ to / and add .php
@@ -105,7 +114,6 @@ class EntityRegeneratorTest extends TestCase
         $finder = (new Finder())->in($expectedDir)->files();
 
         foreach ($finder as $file) {
-
             /** @var SplFileInfo $file */
             $expectedContents = file_get_contents($file->getPathname());
 
@@ -122,6 +130,7 @@ class EntityRegeneratorTest extends TestCase
     {
         $directoryIterator = new \RecursiveDirectoryIterator($sourceDir, \FilesystemIterator::SKIP_DOTS);
         $filter = new AllButTraitsIterator($directoryIterator);
+
         return new \RecursiveIteratorIterator($filter, \RecursiveIteratorIterator::SELF_FIRST);
     }
 }
@@ -132,10 +141,10 @@ class TestEntityRegeneratorKernel extends Kernel
 
     public function registerBundles()
     {
-        return array(
+        return [
             new FrameworkBundle(),
             new DoctrineBundle(),
-        );
+        ];
     }
 
     protected function configureRoutes(RouteCollectionBuilder $routes)
@@ -155,12 +164,12 @@ class TestEntityRegeneratorKernel extends Kernel
                     'EntityRegenerator' => [
                         'is_bundle' => false,
                         'type' => 'annotation',
-                        'dir' => '%kernel.root_dir%/src/Entity',
+                        'dir' => '%kernel.project_dir%/src/Entity',
                         'prefix' => 'Symfony\Bundle\MakerBundle\Tests\tmp\current_project\src\Entity',
                         'alias' => 'EntityRegeneratorApp',
-                    ]
-                ]
-            ]
+                    ],
+                ],
+            ],
         ]);
     }
 
@@ -181,10 +190,10 @@ class TestXmlEntityRegeneratorKernel extends Kernel
 
     public function registerBundles()
     {
-        return array(
+        return [
             new FrameworkBundle(),
             new DoctrineBundle(),
-        );
+        ];
     }
 
     protected function configureRoutes(RouteCollectionBuilder $routes)
@@ -205,12 +214,12 @@ class TestXmlEntityRegeneratorKernel extends Kernel
                     'EntityRegenerator' => [
                         'is_bundle' => false,
                         'type' => 'xml',
-                        'dir' => '%kernel.root_dir%/config/doctrine',
+                        'dir' => '%kernel.project_dir%/config/doctrine',
                         'prefix' => 'Symfony\Bundle\MakerBundle\Tests\tmp\current_project_xml\src\Entity',
                         'alias' => 'EntityRegeneratorApp',
-                    ]
-                ]
-            ]
+                    ],
+                ],
+            ],
         ]);
     }
 
@@ -227,7 +236,8 @@ class TestXmlEntityRegeneratorKernel extends Kernel
 
 class AllButTraitsIterator extends \RecursiveFilterIterator
 {
-    public function accept() {
-        return !in_array($this->current()->getFilename(), []);
+    public function accept()
+    {
+        return !\in_array($this->current()->getFilename(), []);
     }
 }

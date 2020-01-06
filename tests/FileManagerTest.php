@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony MakerBundle package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Bundle\MakerBundle\Tests;
 
 use PHPUnit\Framework\TestCase;
@@ -87,7 +96,7 @@ class FileManagerTest extends TestCase
             'D:\foo\bar',
         ];
 
-        yield 'windows_already_absolute_path' => [
+        yield 'windows_already_absolute_path_bis' => [
             'D:\path\to\project',
             'D:/foo/bar',
             'D:/foo/bar',
@@ -133,6 +142,24 @@ class FileManagerTest extends TestCase
             'D:\path\to\project',
             'D:\path\to\project\vendor\foo',
             true,
+        ];
+    }
+
+    /**
+     * @dataProvider getPathForTemplateTests
+     */
+    public function testPathForTemplate(string $rootDir, string $twigDefaultPath, string $expectedTemplatesFolder)
+    {
+        $fileManager = new FileManager(new Filesystem(), $this->createMock(AutoloaderUtil::class), $rootDir, $twigDefaultPath);
+        $this->assertSame($expectedTemplatesFolder, $fileManager->getPathForTemplate('template.html.twig'));
+    }
+
+    public function getPathForTemplateTests()
+    {
+        yield 'its_a_folder' => [
+            '/home/project/',
+            '/home/project/templates',
+            'templates/template.html.twig',
         ];
     }
 }

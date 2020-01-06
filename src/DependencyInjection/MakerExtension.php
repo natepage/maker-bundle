@@ -40,6 +40,17 @@ class MakerExtension extends Extension
         $namespacesHelperDefinition = $container->getDefinition('maker.namespaces_helper');
         $namespacesHelperDefinition->replaceArgument(0, $config);
 
+        $rootNamespace = trim($config['root_namespace'], '\\');
+
+        $autoloaderFinderDefinition = $container->getDefinition('maker.autoloader_finder');
+        $autoloaderFinderDefinition->replaceArgument(0, $rootNamespace);
+
+        $makeCommandDefinition = $container->getDefinition('maker.generator');
+        $makeCommandDefinition->replaceArgument(1, $rootNamespace);
+
+        $doctrineHelperDefinition = $container->getDefinition('maker.doctrine_helper');
+        $doctrineHelperDefinition->replaceArgument(0, $rootNamespace.'\\Entity');
+
         $container->registerForAutoconfiguration(MakerInterface::class)
             ->addTag(MakeCommandRegistrationPass::MAKER_TAG);
     }

@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the Symfony MakerBundle package.
+ *
+ * (c) Fabien Potencier <fabien@symfony.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Symfony\Bundle\MakerBundle\Tests\Maker;
 
 use Symfony\Bundle\FrameworkBundle\Console\Application;
@@ -75,7 +84,7 @@ class FunctionalTest extends MakerTestCase
                 // command name
                 'app:foo',
             ])
-            ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeCommand')
+            ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeCommand'),
         ];
 
         yield 'command_in_custom_root_namespace' => [MakerTestDetails::createTest(
@@ -85,7 +94,7 @@ class FunctionalTest extends MakerTestCase
                 'app:foo',
             ])
             ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeCommandInCustomRootNamespace')
-            ->changeRootNamespace('Custom')
+            ->changeRootNamespace('Custom'),
         ];
 
         yield 'controller_basic' => [MakerTestDetails::createTest(
@@ -98,7 +107,7 @@ class FunctionalTest extends MakerTestCase
             ->assert(function (string $output, string $directory) {
                 // make sure the template was not configured
                 $this->assertContainsCount('created: ', $output, 1);
-            })
+            }),
         ];
 
         yield 'controller_with_template_and_base' => [MakerTestDetails::createTest(
@@ -108,7 +117,7 @@ class FunctionalTest extends MakerTestCase
                 'FooTwig',
             ])
             ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeControllerTwig')
-            ->addExtraDependencies('twig')
+            ->addExtraDependencies('twig'),
         ];
 
         yield 'controller_with_template_no_base' => [MakerTestDetails::createTest(
@@ -119,7 +128,7 @@ class FunctionalTest extends MakerTestCase
             ])
             ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeControllerTwig')
             ->addExtraDependencies('twig')
-            ->deleteFile('templates/base.html.twig')
+            ->deleteFile('templates/base.html.twig'),
         ];
 
         yield 'controller_without_template' => [MakerTestDetails::createTest(
@@ -133,9 +142,9 @@ class FunctionalTest extends MakerTestCase
             ->assert(function (string $output, string $directory) {
                 // make sure the template was not configured
                 $this->assertContainsCount('created: ', $output, 1);
-                $this->assertContains('created: src/Controller/FooNoTemplateController.php', $output);
-                $this->assertNotContains('created: templates/foo_no_template/index.html.twig', $output);
-            })
+                $this->assertStringContainsString('created: src/Controller/FooNoTemplateController.php', $output);
+                $this->assertStringNotContainsString('created: templates/foo_no_template/index.html.twig', $output);
+            }),
         ];
 
         yield 'controller_sub_namespace' => [MakerTestDetails::createTest(
@@ -147,8 +156,8 @@ class FunctionalTest extends MakerTestCase
             ->assert(function (string $output, string $directory) {
                 $this->assertFileExists($directory.'/src/Controller/Admin/FooBarController.php');
 
-                $this->assertContains('created: src/Controller/Admin/FooBarController.php', $output);
-            })
+                $this->assertStringContainsString('created: src/Controller/Admin/FooBarController.php', $output);
+            }),
         ];
 
         yield 'controller_sub_namespace_template' => [MakerTestDetails::createTest(
@@ -160,7 +169,7 @@ class FunctionalTest extends MakerTestCase
             ->addExtraDependencies('twig')
             ->assert(function (string $output, string $directory) {
                 $this->assertFileExists($directory.'/templates/admin/foo_bar/index.html.twig');
-            })
+            }),
         ];
 
         yield 'controller_full_custom_namespace' => [MakerTestDetails::createTest(
@@ -171,9 +180,9 @@ class FunctionalTest extends MakerTestCase
             ])
             ->addExtraDependencies('twig')
             ->assert(function (string $output, string $directory) {
-                $this->assertContains('created: src/Foo/Bar/CoolController.php', $output);
-                $this->assertContains('created: templates/foo/bar/cool/index.html.twig', $output);
-            })
+                $this->assertStringContainsString('created: src/Foo/Bar/CoolController.php', $output);
+                $this->assertStringContainsString('created: templates/foo/bar/cool/index.html.twig', $output);
+            }),
         ];
 
         yield 'fixtures' => [MakerTestDetails::createTest(
@@ -182,8 +191,8 @@ class FunctionalTest extends MakerTestCase
                 'FooFixtures',
             ])
             ->assert(function (string $output, string $directory) {
-                $this->assertContains('created: src/DataFixtures/FooFixtures.php', $output);
-            })
+                $this->assertStringContainsString('created: src/DataFixtures/FooFixtures.php', $output);
+            }),
         ];
 
         yield 'form_basic' => [MakerTestDetails::createTest(
@@ -193,7 +202,7 @@ class FunctionalTest extends MakerTestCase
                 'FooBar',
                 '',
             ])
-            ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeForm')
+            ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeForm'),
         ];
 
         yield 'form_with_entity' => [MakerTestDetails::createTest(
@@ -204,8 +213,8 @@ class FunctionalTest extends MakerTestCase
                 'SourFood',
             ])
             ->addExtraDependencies('orm')
-            ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeFormForEntity')
-		];
+            ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeFormForEntity'),
+        ];
 
         yield 'form_for_non_entity_dto' => [MakerTestDetails::createTest(
             $this->getMakerInstance(MakeForm::class),
@@ -214,7 +223,7 @@ class FunctionalTest extends MakerTestCase
                 'TaskType',
                 '\\App\\Form\\Data\\TaskData',
             ])
-            ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeFormForNonEntityDto')
+            ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeFormForNonEntityDto'),
         ];
 
         yield 'form_for_sti_entity' => [MakerTestDetails::createTest(
@@ -225,7 +234,7 @@ class FunctionalTest extends MakerTestCase
                 'SourFood',
             ])
             ->addExtraDependencies('orm')
-            ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeFormSTIEntity')
+            ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeFormSTIEntity'),
         ];
 
         yield 'form_for_embebadle_entity' => [MakerTestDetails::createTest(
@@ -236,16 +245,27 @@ class FunctionalTest extends MakerTestCase
                 'Food',
             ])
             ->addExtraDependencies('orm')
-            ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeFormEmbedableEntity')
+            ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeFormEmbedableEntity'),
         ];
 
-        yield 'functional' => [MakerTestDetails::createTest(
+        yield 'functional_maker' => [MakerTestDetails::createTest(
             $this->getMakerInstance(MakeFunctionalTest::class),
             [
                 // functional test class name
                 'FooBar',
             ])
-            ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeFunctional')
+            ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeFunctional'),
+        ];
+
+        yield 'functional_with_panther' => [MakerTestDetails::createTest(
+            $this->getMakerInstance(MakeFunctionalTest::class),
+            [
+                // functional test class name
+                'FooBar',
+            ])
+            ->addExtraDependencies('panther')
+            ->setRequiredPhpVersion(70100)
+            ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeFunctional'),
         ];
 
         yield 'subscriber' => [MakerTestDetails::createTest(
@@ -255,7 +275,7 @@ class FunctionalTest extends MakerTestCase
                 'FooBar',
                 // event name
                 'kernel.request',
-            ])
+            ]),
         ];
 
         yield 'subscriber_unknown_event_class' => [MakerTestDetails::createTest(
@@ -265,7 +285,7 @@ class FunctionalTest extends MakerTestCase
                 'FooBar',
                 // event name
                 'foo.unknown_event',
-            ])
+            ]),
         ];
 
         yield 'serializer_encoder' => [MakerTestDetails::createTest(
@@ -275,7 +295,7 @@ class FunctionalTest extends MakerTestCase
                 'FooBarEncoder',
                 // encoder format
                 'foobar',
-            ])
+            ]),
         ];
 
         yield 'twig_extension' => [MakerTestDetails::createTest(
@@ -283,7 +303,7 @@ class FunctionalTest extends MakerTestCase
             [
                 // extension class name
                 'FooBar',
-            ])
+            ]),
         ];
 
         yield 'unit_test' => [MakerTestDetails::createTest(
@@ -291,7 +311,7 @@ class FunctionalTest extends MakerTestCase
             [
                 // class name
                 'FooBar',
-            ])
+            ]),
         ];
 
         yield 'validator' => [MakerTestDetails::createTest(
@@ -299,7 +319,7 @@ class FunctionalTest extends MakerTestCase
             [
                 // validator name
                 'FooBar',
-            ])
+            ]),
         ];
 
         yield 'voter' => [MakerTestDetails::createTest(
@@ -307,7 +327,7 @@ class FunctionalTest extends MakerTestCase
             [
                 // voter class name
                 'FooBar',
-            ])
+            ]),
         ];
 
         yield 'auth_empty_one_firewall' => [
@@ -323,12 +343,12 @@ class FunctionalTest extends MakerTestCase
             ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeAuthenticator')
             ->assert(
                 function (string $output, string $directory) {
-                    $this->assertContains('Success', $output);
+                    $this->assertStringContainsString('Success', $output);
 
                     $fs = new Filesystem();
                     $this->assertTrue($fs->exists(sprintf('%s/src/Security/AppCustomAuthenticator.php', $directory)));
 
-                    $securityConfig = Yaml::parse(file_get_contents(sprintf("%s/config/packages/security.yaml", $directory)));
+                    $securityConfig = Yaml::parse(file_get_contents(sprintf('%s/config/packages/security.yaml', $directory)));
                     $this->assertEquals(
                         'App\\Security\\AppCustomAuthenticator',
                         $securityConfig['security']['firewalls']['main']['guard']['authenticators'][0]
@@ -352,9 +372,9 @@ class FunctionalTest extends MakerTestCase
             ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeAuthenticatorMultipleFirewalls')
             ->assert(
                 function (string $output, string $directory) {
-                    $this->assertContains('Success', $output);
+                    $this->assertStringContainsString('Success', $output);
 
-                    $securityConfig = Yaml::parse(file_get_contents(sprintf("%s/config/packages/security.yaml", $directory)));
+                    $securityConfig = Yaml::parse(file_get_contents(sprintf('%s/config/packages/security.yaml', $directory)));
                     $this->assertEquals(
                         'App\\Security\\AppCustomAuthenticator',
                         $securityConfig['security']['firewalls']['second']['guard']['authenticators'][0]
@@ -378,9 +398,9 @@ class FunctionalTest extends MakerTestCase
             ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeAuthenticatorExistingAuthenticator')
             ->assert(
                 function (string $output, string $directory) {
-                    $this->assertContains('Success', $output);
+                    $this->assertStringContainsString('Success', $output);
 
-                    $securityConfig = Yaml::parse(file_get_contents(sprintf("%s/config/packages/security.yaml", $directory)));
+                    $securityConfig = Yaml::parse(file_get_contents(sprintf('%s/config/packages/security.yaml', $directory)));
                     $this->assertEquals(
                         'App\\Security\\AppCustomAuthenticator',
                         $securityConfig['security']['firewalls']['main']['guard']['entry_point']
@@ -406,9 +426,9 @@ class FunctionalTest extends MakerTestCase
             ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeAuthenticatorMultipleFirewallsExistingAuthenticator')
             ->assert(
                 function (string $output, string $directory) {
-                    $this->assertContains('Success', $output);
+                    $this->assertStringContainsString('Success', $output);
 
-                    $securityConfig = Yaml::parse(file_get_contents(sprintf("%s/config/packages/security.yaml", $directory)));
+                    $securityConfig = Yaml::parse(file_get_contents(sprintf('%s/config/packages/security.yaml', $directory)));
                     $this->assertEquals(
                         'App\\Security\\AppCustomAuthenticator',
                         $securityConfig['security']['firewalls']['second']['guard']['entry_point']
@@ -427,6 +447,9 @@ class FunctionalTest extends MakerTestCase
                     'AppCustomAuthenticator',
                     // controller name
                     'SecurityController',
+                    // field name
+                    'userEmail',
+                    'no',
                 ]
             )
             ->addExtraDependencies('doctrine')
@@ -437,7 +460,7 @@ class FunctionalTest extends MakerTestCase
             ->updateSchemaAfterCommand()
             ->assert(
                 function (string $output, string $directory) {
-                    $this->assertContains('Success', $output);
+                    $this->assertStringContainsString('Success', $output);
 
                     $fs = new Filesystem();
                     $this->assertTrue($fs->exists(sprintf('%s/src/Controller/SecurityController.php', $directory)));
@@ -460,13 +483,14 @@ class FunctionalTest extends MakerTestCase
                     // user class
                     'App\\Security\\User',
                     // username field => userEmail
-                    0
+                    0,
+                    'no',
                 ]
             )
             ->addExtraDependencies('doctrine/annotations')
             ->addExtraDependencies('twig')
             ->addExtraDependencies('symfony/form')
-            ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeAuthenticatorLoginFormCustomUsernameField')
+            ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeAuthenticatorLoginFormCustomUsernameField'),
         ];
 
         yield 'auth_login_form_user_entity_no_encoder' => [
@@ -479,6 +503,7 @@ class FunctionalTest extends MakerTestCase
                     'AppCustomAuthenticator',
                     // controller name
                     'SecurityController',
+                    'no',
                 ]
             )
             ->addExtraDependencies('doctrine')
@@ -501,6 +526,7 @@ class FunctionalTest extends MakerTestCase
                     'SecurityController',
                     // user class
                     'App\Security\User',
+                    'no',
                 ]
             )
             ->addExtraDependencies('twig')
@@ -521,6 +547,7 @@ class FunctionalTest extends MakerTestCase
                     'SecurityController',
                     // user class
                     'App\Security\User',
+                    'no',
                 ]
             )
             ->addExtraDependencies('twig')
@@ -539,6 +566,7 @@ class FunctionalTest extends MakerTestCase
                     'AppCustomAuthenticator',
                     // controller name
                     'SecurityController',
+                    'no',
                 ]
             )
             ->addExtraDependencies('doctrine')
@@ -565,7 +593,7 @@ class FunctionalTest extends MakerTestCase
             ->addExtraDependencies('doctrine')
             ->setGuardAuthenticator('main', 'App\\Security\\AutomaticAuthenticator')
             ->setRequiredPhpVersion(70100)
-            ->updateSchemaAfterCommand()
+            ->updateSchemaAfterCommand(),
         ];
 
         yield 'user_security_model_no_password' => [MakerTestDetails::createTest(
@@ -584,7 +612,7 @@ class FunctionalTest extends MakerTestCase
                 'src/Security/UserProvider.php',
                 'throw new \Exception(\'TODO: fill in refreshUser() inside \'.__FILE__);',
                 'return $user;'
-            )
+            ),
         ];
 
         yield 'migration_with_changes' => [MakerTestDetails::createTest(
@@ -597,7 +625,7 @@ class FunctionalTest extends MakerTestCase
             // so let's install it
             ->addExtraDependencies('doctrine/orm')
             ->assert(function (string $output, string $directory) {
-                $this->assertContains('Success', $output);
+                $this->assertStringContainsString('Success', $output);
 
                 $finder = new Finder();
                 $finder->in($directory.'/src/Migrations')
@@ -607,8 +635,8 @@ class FunctionalTest extends MakerTestCase
                 // see that the exact filename is in the output
                 $iterator = $finder->getIterator();
                 $iterator->rewind();
-                $this->assertContains(sprintf('"src/Migrations/%s"', $iterator->current()->getFilename()), $output);
-            })
+                $this->assertStringContainsString(sprintf('"src/Migrations/%s"', $iterator->current()->getFilename()), $output);
+            }),
         ];
 
         yield 'migration_no_changes' => [MakerTestDetails::createTest(
@@ -621,8 +649,8 @@ class FunctionalTest extends MakerTestCase
             ->assert(function (string $output, string $directory) {
                 $this->assertNotContains('Success', $output);
 
-                $this->assertContains('No database changes were detected', $output);
-            })
+                $this->assertStringContainsString('No database changes were detected', $output);
+            }),
         ];
 
         yield 'crud_basic' => [MakerTestDetails::createTest(
@@ -635,9 +663,11 @@ class FunctionalTest extends MakerTestCase
             // need for crud web tests
             ->configureDatabase()
             ->assert(function (string $output, string $directory) {
-                $this->assertContains('created: src/Controller/SweetFoodController.php', $output);
-                $this->assertContains('created: src/Form/SweetFoodType.php', $output);
+                $this->assertStringContainsString('created: src/Controller/SweetFoodController.php', $output);
+                $this->assertStringContainsString('created: src/Form/SweetFoodType.php', $output);
             })
+            // workaround for segfault in PHP 7.1 CI :/
+            ->setRequiredPhpVersion(70200)
         ];
 
         yield 'crud_basic_in_custom_root_namespace' => [MakerTestDetails::createTest(
@@ -651,9 +681,11 @@ class FunctionalTest extends MakerTestCase
             // need for crud web tests
             ->configureDatabase()
             ->assert(function (string $output, string $directory) {
-                $this->assertContains('created: src/Controller/SweetFoodController.php', $output);
-                $this->assertContains('created: src/Form/SweetFoodType.php', $output);
+                $this->assertStringContainsString('created: src/Controller/SweetFoodController.php', $output);
+                $this->assertStringContainsString('created: src/Form/SweetFoodType.php', $output);
             })
+            // workaround for segfault in PHP 7.1 CI :/
+            ->setRequiredPhpVersion(70200)
         ];
 
         yield 'crud_repository' => [MakerTestDetails::createTest(
@@ -666,9 +698,9 @@ class FunctionalTest extends MakerTestCase
             // need for crud web tests
             ->configureDatabase()
             ->assert(function (string $output, string $directory) {
-                $this->assertContains('created: src/Controller/SweetFoodController.php', $output);
-                $this->assertContains('created: src/Form/SweetFoodType.php', $output);
-            })
+                $this->assertStringContainsString('created: src/Controller/SweetFoodController.php', $output);
+                $this->assertStringContainsString('created: src/Form/SweetFoodType.php', $output);
+            }),
         ];
 
         yield 'crud_with_no_base' => [MakerTestDetails::createTest(
@@ -683,9 +715,11 @@ class FunctionalTest extends MakerTestCase
             ->configureDatabase()
             ->deleteFile('templates/base.html.twig')
             ->assert(function (string $output, string $directory) {
-                $this->assertContains('created: src/Controller/SweetFoodController.php', $output);
-                $this->assertContains('created: src/Form/SweetFoodType.php', $output);
+                $this->assertStringContainsString('created: src/Controller/SweetFoodController.php', $output);
+                $this->assertStringContainsString('created: src/Form/SweetFoodType.php', $output);
             })
+            // workaround for segfault in PHP 7.1 CI :/
+            ->setRequiredPhpVersion(70200)
         ];
 
         yield 'registration_form_entity_guard_authenticate' => [MakerTestDetails::createTest(
@@ -702,6 +736,11 @@ class FunctionalTest extends MakerTestCase
             ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeRegistrationFormEntity')
             ->configureDatabase()
             ->updateSchemaAfterCommand()
+            // workaround for a strange behavior where, every other
+            // test run, the UniqueEntity would not be seen, because
+            // the the validation cache was out of date. The cause
+            // is currently unknown, so this workaround was added
+            ->addPostMakeCommand('php bin/console cache:clear --env=test')
         ];
 
         // sanity check on all the interactive questions
@@ -714,9 +753,9 @@ class FunctionalTest extends MakerTestCase
                 'n', // no UniqueEntity
                 '', // yes authenticate after
                 'main', // firewall
-                '1' // authenticator
+                '1', // authenticator
             ])
-            ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeRegistrationFormNoGuessing')
+            ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeRegistrationFormNoGuessing'),
         ];
 
         yield 'registration_form_entity_no_authenticate' => [MakerTestDetails::createTest(
@@ -730,6 +769,47 @@ class FunctionalTest extends MakerTestCase
             ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeRegistrationFormEntity')
             ->configureDatabase()
             ->updateSchemaAfterCommand()
+            // workaround for strange failure - see test case
+            // registration_form_entity_guard_authenticate for details
+            ->addPostMakeCommand('php bin/console cache:clear --env=test')
+        ];
+
+        yield 'auth_login_form_user_entity_with_encoder_logout' => [
+            MakerTestDetails::createTest(
+                $this->getMakerInstance(MakeAuthenticator::class),
+                [
+                    // authenticator type => login-form
+                    1,
+                    // class name
+                    'AppCustomAuthenticator',
+                    // controller name
+                    'SecurityController',
+                    // logout support
+                    'yes',
+                ]
+            )
+                ->addExtraDependencies('doctrine')
+                ->addExtraDependencies('twig')
+                ->addExtraDependencies('symfony/form')
+                ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeAuthenticatorLoginFormUserEntityLogout')
+                ->configureDatabase()
+                ->updateSchemaAfterCommand()
+                ->assert(
+                    function (string $output, string $directory) {
+                        $this->assertStringContainsString('Success', $output);
+
+                        $fs = new Filesystem();
+                        $this->assertTrue($fs->exists(sprintf('%s/src/Controller/SecurityController.php', $directory)));
+                        $this->assertTrue($fs->exists(sprintf('%s/templates/security/login.html.twig', $directory)));
+                        $this->assertTrue($fs->exists(sprintf('%s/src/Security/AppCustomAuthenticator.php', $directory)));
+
+                        $securityConfig = Yaml::parse(file_get_contents(sprintf('%s/config/packages/security.yaml', $directory)));
+                        $this->assertEquals(
+                            'app_logout',
+                            $securityConfig['security']['firewalls']['main']['logout']['path']
+                        );
+                    }
+                ),
         ];
     }
 
@@ -746,7 +826,7 @@ class FunctionalTest extends MakerTestCase
             ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeEntity')
             ->configureDatabase()
             ->updateSchemaAfterCommand()
-            ->setRequiredPhpVersion(70100)
+            ->setRequiredPhpVersion(70100),
         ];
 
         yield 'entity_new_api_resource' => [MakerTestDetails::createTest(
@@ -764,13 +844,13 @@ class FunctionalTest extends MakerTestCase
             ->configureDatabase()
             ->updateSchemaAfterCommand()
             ->setRequiredPhpVersion(70100)
-            ->assert(function(string $output, string $directory) {
+            ->assert(function (string $output, string $directory) {
                 $this->assertFileExists($directory.'/src/Entity/User.php');
 
                 $content = file_get_contents($directory.'/src/Entity/User.php');
-                $this->assertContains('use ApiPlatform\Core\Annotation\ApiResource;', $content);
-                $this->assertContains('@ApiResource', $content);
-            })
+                $this->assertStringContainsString('use ApiPlatform\Core\Annotation\ApiResource;', $content);
+                $this->assertStringContainsString('@ApiResource', $content);
+            }),
         ];
 
         yield 'entity_with_fields' => [MakerTestDetails::createTest(
@@ -795,7 +875,7 @@ class FunctionalTest extends MakerTestCase
             ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeEntity')
             ->configureDatabase()
             ->updateSchemaAfterCommand()
-            ->setRequiredPhpVersion(70100)
+            ->setRequiredPhpVersion(70100),
         ];
 
         yield 'entity_updating' => [MakerTestDetails::createTest(
@@ -817,7 +897,7 @@ class FunctionalTest extends MakerTestCase
             ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeEntityUpdate')
             ->configureDatabase()
             ->updateSchemaAfterCommand()
-            ->setRequiredPhpVersion(70100)
+            ->setRequiredPhpVersion(70100),
         ];
 
         yield 'entity_many_to_one_simple_with_inverse' => [MakerTestDetails::createTest(
@@ -847,7 +927,7 @@ class FunctionalTest extends MakerTestCase
             ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeEntityManyToOne')
             ->configureDatabase()
             ->updateSchemaAfterCommand()
-            ->setRequiredPhpVersion(70100)
+            ->setRequiredPhpVersion(70100),
         ];
 
         yield 'entity_many_to_one_simple_no_inverse' => [MakerTestDetails::createTest(
@@ -873,7 +953,7 @@ class FunctionalTest extends MakerTestCase
             ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeEntityManyToOneNoInverse')
             ->configureDatabase()
             ->updateSchemaAfterCommand()
-            ->setRequiredPhpVersion(70100)
+            ->setRequiredPhpVersion(70100),
         ];
 
         yield 'entity_many_to_one_self_referencing' => [MakerTestDetails::createTest(
@@ -903,7 +983,7 @@ class FunctionalTest extends MakerTestCase
            ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeEntitySelfReferencing')
            ->configureDatabase()
            ->updateSchemaAfterCommand()
-           ->setRequiredPhpVersion(70100)
+           ->setRequiredPhpVersion(70100),
         ];
 
         yield 'entity_exists_in_root' => [MakerTestDetails::createTest(
@@ -933,7 +1013,7 @@ class FunctionalTest extends MakerTestCase
            ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeEntityExistsInRoot')
            ->configureDatabase()
            ->updateSchemaAfterCommand()
-           ->setRequiredPhpVersion(70100)
+           ->setRequiredPhpVersion(70100),
         ];
 
         yield 'entity_one_to_many_simple' => [MakerTestDetails::createTest(
@@ -961,7 +1041,7 @@ class FunctionalTest extends MakerTestCase
             ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeEntityOneToMany')
             ->configureDatabase()
             ->updateSchemaAfterCommand()
-            ->setRequiredPhpVersion(70100)
+            ->setRequiredPhpVersion(70100),
         ];
 
         yield 'entity_many_to_many_simple' => [MakerTestDetails::createTest(
@@ -987,7 +1067,7 @@ class FunctionalTest extends MakerTestCase
             ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeEntityManyToMany')
             ->configureDatabase()
             ->updateSchemaAfterCommand()
-            ->setRequiredPhpVersion(70100)
+            ->setRequiredPhpVersion(70100),
         ];
 
         yield 'entity_many_to_many_simple_in_custom_root_namespace' => [MakerTestDetails::createTest(
@@ -1014,7 +1094,7 @@ class FunctionalTest extends MakerTestCase
             ->changeRootNamespace('Custom')
             ->configureDatabase()
             ->updateSchemaAfterCommand()
-            ->setRequiredPhpVersion(70100)
+            ->setRequiredPhpVersion(70100),
         ];
 
         yield 'entity_one_to_one_simple' => [MakerTestDetails::createTest(
@@ -1042,7 +1122,7 @@ class FunctionalTest extends MakerTestCase
             ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeEntityOneToOne')
             ->configureDatabase()
             ->updateSchemaAfterCommand()
-            ->setRequiredPhpVersion(70100)
+            ->setRequiredPhpVersion(70100),
         ];
 
         yield 'entity_many_to_one_vendor_target' => [MakerTestDetails::createTest(
@@ -1073,17 +1153,17 @@ class FunctionalTest extends MakerTestCase
                 '"App\\\Tests\\\": "tests/",'."\n".'            "Some\\\Vendor\\\": "vendor/some-vendor/src",'
             )
             ->assert(function (string $output, string $directory) {
-                $this->assertContains('updated: src/Entity/User.php', $output);
+                $this->assertStringContainsString('updated: src/Entity/User.php', $output);
                 $this->assertNotContains('updated: vendor/', $output);
 
                 // sanity checks on the generated code
                 $finder = new Finder();
                 $finder->in($directory.'/src/Entity')->files()->name('*.php');
-                $this->assertEquals(1, count($finder));
+                $this->assertCount(1, $finder);
 
                 $this->assertNotContains('inversedBy', file_get_contents($directory.'/src/Entity/User.php'));
             })
-            ->setRequiredPhpVersion(70100)
+            ->setRequiredPhpVersion(70100),
         ];
 
         yield 'entity_many_to_many_vendor_target' => [MakerTestDetails::createTest(
@@ -1116,7 +1196,7 @@ class FunctionalTest extends MakerTestCase
 
                 $this->assertNotContains('inversedBy', file_get_contents($directory.'/src/Entity/User.php'));
             })
-            ->setRequiredPhpVersion(70100)
+            ->setRequiredPhpVersion(70100),
         ];
 
         yield 'entity_one_to_one_vendor_target' => [MakerTestDetails::createTest(
@@ -1151,7 +1231,7 @@ class FunctionalTest extends MakerTestCase
 
                 $this->assertNotContains('inversedBy', file_get_contents($directory.'/src/Entity/User.php'));
             })
-            ->setRequiredPhpVersion(70100)
+            ->setRequiredPhpVersion(70100),
         ];
 
         yield 'entity_regenerate' => [MakerTestDetails::createTest(
@@ -1163,7 +1243,7 @@ class FunctionalTest extends MakerTestCase
             ->setArgumentsString('--regenerate')
             ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeEntityRegenerate')
             ->configureDatabase(true)
-            ->setRequiredPhpVersion(70100)
+            ->setRequiredPhpVersion(70100),
         ];
 
         yield 'entity_regenerate_embeddable_object' => [MakerTestDetails::createTest(
@@ -1175,7 +1255,7 @@ class FunctionalTest extends MakerTestCase
             ->setArgumentsString('--regenerate')
             ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeEntityRegenerateEmbeddableObject')
             ->configureDatabase()
-            ->setRequiredPhpVersion(70100)
+            ->setRequiredPhpVersion(70100),
         ];
 
         yield 'entity_regenerate_embeddable' => [MakerTestDetails::createTest(
@@ -1187,7 +1267,7 @@ class FunctionalTest extends MakerTestCase
             ->setArgumentsString('--regenerate --overwrite')
             ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeEntityRegenerateEmbedable')
             ->configureDatabase()
-            ->setRequiredPhpVersion(70100)
+            ->setRequiredPhpVersion(70100),
         ];
 
         yield 'entity_regenerate_overwrite' => [MakerTestDetails::createTest(
@@ -1199,7 +1279,7 @@ class FunctionalTest extends MakerTestCase
             ->setArgumentsString('--regenerate --overwrite')
             ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeEntityRegenerateOverwrite')
             ->configureDatabase(false)
-            ->setRequiredPhpVersion(70100)
+            ->setRequiredPhpVersion(70100),
         ];
 
         yield 'entity_regenerate_xml' => [MakerTestDetails::createTest(
@@ -1221,7 +1301,7 @@ class FunctionalTest extends MakerTestCase
                 "dir: '%kernel.project_dir%/config/doctrine'"
             )
             ->configureDatabase(false)
-            ->setRequiredPhpVersion(70100)
+            ->setRequiredPhpVersion(70100),
         ];
 
         yield 'entity_xml_mapping_error_existing' => [MakerTestDetails::createTest(
@@ -1243,9 +1323,9 @@ class FunctionalTest extends MakerTestCase
             ->configureDatabase(false)
             ->setCommandAllowedToFail(true)
             ->assert(function (string $output, string $directory) {
-                $this->assertContains('Only annotation mapping is supported', $output);
+                $this->assertStringContainsString('Only annotation mapping is supported', $output);
             })
-            ->setRequiredPhpVersion(70100)
+            ->setRequiredPhpVersion(70100),
         ];
 
         yield 'entity_xml_mapping_error_new_class' => [MakerTestDetails::createTest(
@@ -1267,9 +1347,9 @@ class FunctionalTest extends MakerTestCase
             ->configureDatabase(false)
             ->setCommandAllowedToFail(true)
             ->assert(function (string $output, string $directory) {
-                $this->assertContains('Only annotation mapping is supported', $output);
+                $this->assertStringContainsString('Only annotation mapping is supported', $output);
             })
-            ->setRequiredPhpVersion(70100)
+            ->setRequiredPhpVersion(70100),
         ];
 
         yield 'entity_updating_overwrite' => [MakerTestDetails::createTest(
@@ -1288,7 +1368,7 @@ class FunctionalTest extends MakerTestCase
             ])
             ->setArgumentsString('--overwrite')
             ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeEntityOverwrite')
-            ->setRequiredPhpVersion(70100)
+            ->setRequiredPhpVersion(70100),
         ];
 
         // see #192
@@ -1303,7 +1383,7 @@ class FunctionalTest extends MakerTestCase
             ->setFixtureFilesPath(__DIR__.'/../fixtures/MakeEntitySubNamespaceMatchingEntity')
             ->configureDatabase()
             ->updateSchemaAfterCommand()
-            ->setRequiredPhpVersion(70100)
+            ->setRequiredPhpVersion(70100),
         ];
     }
 
@@ -1365,7 +1445,7 @@ class FunctionalTestKernel extends Kernel implements CompilerPassInterface
     {
         return [
             new FrameworkBundle(),
-            new MakerBundle()
+            new MakerBundle(),
         ];
     }
 
