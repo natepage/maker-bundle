@@ -19,6 +19,7 @@ use Symfony\Bundle\MakerBundle\Exception\RuntimeCommandException;
 use Symfony\Bundle\MakerBundle\Generator;
 use Symfony\Bundle\MakerBundle\InputAwareMakerInterface;
 use Symfony\Bundle\MakerBundle\InputConfiguration;
+use Symfony\Bundle\MakerBundle\Util\NamespacesHelper;
 use Symfony\Bundle\MakerBundle\Validator;
 use Symfony\Component\BrowserKit\History;
 use Symfony\Component\Console\Command\Command;
@@ -49,6 +50,10 @@ final class MakeTest extends AbstractMaker implements InputAwareMakerInterface
         'PantherTestCase' => 'https://github.com/symfony/panther#testing-usage',
     ];
 
+    public function __construct(private NamespacesHelper $namespacesHelper)
+    {
+    }
+
     public static function getCommandName(): string
     {
         return 'make:test';
@@ -56,6 +61,8 @@ final class MakeTest extends AbstractMaker implements InputAwareMakerInterface
 
     /**
      * @deprecated remove this method when removing make:unit-test and make:functional-test
+     *
+     * @return string[]
      */
     public static function getCommandAliases(): iterable
     {
@@ -65,7 +72,7 @@ final class MakeTest extends AbstractMaker implements InputAwareMakerInterface
 
     public static function getCommandDescription(): string
     {
-        return 'Creates a new test class';
+        return 'Create a new test class';
     }
 
     public function configureCommand(Command $command, InputConfiguration $inputConfig): void
@@ -73,14 +80,15 @@ final class MakeTest extends AbstractMaker implements InputAwareMakerInterface
         $typesDesc = [];
         $typesHelp = [];
         foreach (self::DESCRIPTIONS as $type => $desc) {
-            $typesDesc[] = sprintf('<fg=yellow>%s</> (%s)', $type, $desc);
-            $typesHelp[] = sprintf('* <info>%s</info>: %s', $type, $desc);
+            $typesDesc[] = \sprintf('<fg=yellow>%s</> (%s)', $type, $desc);
+            $typesHelp[] = \sprintf('* <info>%s</info>: %s', $type, $desc);
         }
 
         $command
             ->addArgument('type', InputArgument::OPTIONAL, 'The type of test: '.implode(', ', $typesDesc))
             ->addArgument('name', InputArgument::OPTIONAL, 'The name of the test class (e.g. <fg=yellow>BlogPostTest</>)')
-            ->setHelp(file_get_contents(__DIR__.'/../Resources/help/MakeTest.txt').implode("\n", $typesHelp));
+            ->setHelp($this->getHelpFileContents('MakeTest.txt').implode("\n", $typesHelp))
+        ;
 
         $inputConfig->setArgumentAsNonInteractive('name');
         $inputConfig->setArgumentAsNonInteractive('type');
@@ -93,7 +101,7 @@ final class MakeTest extends AbstractMaker implements InputAwareMakerInterface
 
         if (null !== $type = $input->getArgument('type')) {
             if (!isset(self::DESCRIPTIONS[$type])) {
-                throw new RuntimeCommandException(sprintf('The test type must be one of "%s", "%s" given.', implode('", "', array_keys(self::DESCRIPTIONS)), $type));
+                throw new RuntimeCommandException(\sprintf('The test type must be one of "%s", "%s" given.', implode('", "', array_keys(self::DESCRIPTIONS)), $type));
             }
         } else {
             $input->setArgument(
@@ -122,11 +130,15 @@ final class MakeTest extends AbstractMaker implements InputAwareMakerInterface
                 'Choose a class name for your test, like:',
                 ' * <fg=yellow>UtilTest</> (to create tests/UtilTest.php)',
                 ' * <fg=yellow>Service\\UtilTest</> (to create tests/Service/UtilTest.php)',
-                ' * <fg=yellow>\\App\Tests\\Service\\UtilTest</> (to create tests/Service/UtilTest.php)',
+                \sprintf(
+                    ' * <fg=yellow>\\%s\\%s\\Service\\UtilTest</> (to create tests/Service/UtilTest.php)',
+                    $this->namespacesHelper->getRootNamespace(),
+                    $this->namespacesHelper->getTestNamespace()
+                ),
             ]);
 
             $nameArgument = $command->getDefinition()->getArgument('name');
-            $value = $io->ask($nameArgument->getDescription(), $nameArgument->getDefault(), [Validator::class, 'notBlank']);
+            $value = $io->ask($nameArgument->getDescription(), $nameArgument->getDefault(), Validator::notBlank(...));
             $input->setArgument($nameArgument->getName(), $value);
         }
     }
@@ -135,7 +147,7 @@ final class MakeTest extends AbstractMaker implements InputAwareMakerInterface
     {
         $testClassNameDetails = $generator->createClassNameDetails(
             $input->getArgument('name'),
-            'Tests\\',
+            $generator->getNamespacesHelper()->getTestNamespace(),
             'Test'
         );
 
@@ -156,11 +168,11 @@ final class MakeTest extends AbstractMaker implements InputAwareMakerInterface
 
         $io->text([
             'Next: Open your new test class and start customizing it.',
-            sprintf('Find the documentation at <fg=yellow>%s</>', self::DOCS[$type]),
+            \sprintf('Find the documentation at <fg=yellow>%s</>', self::DOCS[$type]),
         ]);
     }
 
-    public function configureDependencies(DependencyBuilder $dependencies, InputInterface $input = null): void
+    public function configureDependencies(DependencyBuilder $dependencies, ?InputInterface $input = null): void
     {
         if (null === $input) {
             return;

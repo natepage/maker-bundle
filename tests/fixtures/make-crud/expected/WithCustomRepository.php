@@ -9,12 +9,12 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/sweet/food')]
-class SweetFoodController extends AbstractController
+final class SweetFoodController extends AbstractController
 {
-    #[Route('/', name: 'app_sweet_food_index', methods: ['GET'])]
+    #[Route(name: 'app_sweet_food_index', methods: ['GET'])]
     public function index(SweetFoodRepository $sweetFoodRepository): Response
     {
         return $this->render('sweet_food/index.html.twig', [
@@ -71,7 +71,7 @@ class SweetFoodController extends AbstractController
     #[Route('/{id}', name: 'app_sweet_food_delete', methods: ['POST'])]
     public function delete(Request $request, SweetFood $sweetFood, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$sweetFood->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete'.$sweetFood->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($sweetFood);
             $entityManager->flush();
         }

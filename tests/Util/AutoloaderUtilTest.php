@@ -15,6 +15,7 @@ use Composer\Autoload\ClassLoader;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\MakerBundle\Util\AutoloaderUtil;
 use Symfony\Bundle\MakerBundle\Util\ComposerAutoloaderFinder;
+use Symfony\Bundle\MakerBundle\Util\NamespacesHelper;
 use Symfony\Component\Filesystem\Filesystem;
 
 class AutoloaderUtilTest extends TestCase
@@ -45,7 +46,7 @@ class AutoloaderUtilTest extends TestCase
                 str_replace('\\', '/', self::$currentRootDir.'/'.$expectedPath),
                 // normalize slashes for Windows comparison
                 str_replace('\\', '/', $autoloaderUtil->getPathForFutureClass($className)),
-                sprintf('class "%s" should have been in path "%s"', $className, $expectedPath)
+                \sprintf('class "%s" should have been in path "%s"', $className, $expectedPath)
             );
         }
     }
@@ -58,14 +59,14 @@ class AutoloaderUtilTest extends TestCase
             $configured = $autoloaderUtil->isNamespaceConfiguredToAutoload($namespace);
 
             if ($expected) {
-                $this->assertTrue($configured, sprintf('namespace "%s" is not found but must be', $namespace));
+                $this->assertTrue($configured, \sprintf('namespace "%s" is not found but must be', $namespace));
             } else {
-                $this->assertFalse($configured, sprintf('namespace "%s" is found but must not be', $namespace));
+                $this->assertFalse($configured, \sprintf('namespace "%s" is found but must not be', $namespace));
             }
         }
     }
 
-    private function createComposerAutoloaderFinder(array $composerJsonParams = null): ComposerAutoloaderFinder
+    private function createComposerAutoloaderFinder(?array $composerJsonParams = null): ComposerAutoloaderFinder
     {
         $composerJsonParams = $composerJsonParams ?: [
             'autoload' => [
@@ -96,7 +97,7 @@ class AutoloaderUtilTest extends TestCase
         /** @var \PHPUnit_Framework_MockObject_MockObject|ComposerAutoloaderFinder $finder */
         $finder = $this
             ->getMockBuilder(ComposerAutoloaderFinder::class)
-            ->setConstructorArgs(['App\\'])
+            ->setConstructorArgs([new NamespacesHelper()])
             ->getMock();
 
         $finder

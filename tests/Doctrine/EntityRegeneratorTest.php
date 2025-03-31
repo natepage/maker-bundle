@@ -12,6 +12,7 @@
 namespace Symfony\Bundle\MakerBundle\Tests\Doctrine;
 
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
+use Doctrine\Persistence\Reflection\RuntimeReflectionProperty;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
@@ -22,6 +23,8 @@ use Symfony\Bundle\MakerBundle\FileManager;
 use Symfony\Bundle\MakerBundle\Generator;
 use Symfony\Bundle\MakerBundle\Util\AutoloaderUtil;
 use Symfony\Bundle\MakerBundle\Util\MakerFileLinkFormatter;
+use Symfony\Bundle\MakerBundle\Util\NamespacesHelper;
+use Symfony\Bundle\MakerBundle\Util\TemplateComponentGenerator;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Filesystem\Filesystem;
@@ -96,9 +99,11 @@ class EntityRegeneratorTest extends TestCase
                 return $tmpDir.'/src/'.str_replace('\\', '/', $shortClassName).'.php';
             });
 
+        $namespacesHelper = new NamespacesHelper();
         $fileManager = new FileManager($fs, $autoloaderUtil, new MakerFileLinkFormatter(null), $tmpDir);
-        $doctrineHelper = new DoctrineHelper('App\\Entity', $container->get('doctrine'));
-        $generator = new Generator($fileManager, 'App\\');
+        $doctrineHelper = new DoctrineHelper($namespacesHelper, $container->get('doctrine'));
+        $templateComponentGenerator = new TemplateComponentGenerator(false, false, $namespacesHelper);
+        $generator = new Generator(fileManager: $fileManager, namespacesHelper: $namespacesHelper, templateComponentGenerator: $templateComponentGenerator);
         $entityClassGenerator = new EntityClassGenerator($generator, $doctrineHelper);
         $regenerator = new EntityRegenerator(
             $doctrineHelper,
@@ -110,7 +115,7 @@ class EntityRegeneratorTest extends TestCase
 
         $regenerator->regenerateEntities($namespace);
 
-        $expectedDir = sprintf(__DIR__.'/fixtures/%s/src', $expectedDirName);
+        $expectedDir = \sprintf(__DIR__.'/fixtures/%s/src', $expectedDirName);
         $finder = (new Finder())->in($expectedDir)->files();
 
         foreach ($finder as $file) {
@@ -118,11 +123,11 @@ class EntityRegeneratorTest extends TestCase
             $expectedContents = file_get_contents($file->getPathname());
 
             $actualRelativePath = ltrim(str_replace($expectedDir, '', $file->getPathname()), '/');
-            $actualPath = sprintf('%s/src/%s', $tmpDir, $actualRelativePath);
-            $this->assertFileExists($actualPath, sprintf('Could not find expected file src/%s', $actualRelativePath));
+            $actualPath = \sprintf('%s/src/%s', $tmpDir, $actualRelativePath);
+            $this->assertFileExists($actualPath, \sprintf('Could not find expected file src/%s', $actualRelativePath));
             $actualContents = file_get_contents($actualPath);
 
-            $this->assertEquals($expectedContents, $actualContents, sprintf('File "%s" does not match: %s', $file->getFilename(), $actualContents));
+            $this->assertEquals($expectedContents, $actualContents, \sprintf('File "%s" does not match: %s', $file->getFilename(), $actualContents));
         }
     }
 
@@ -159,6 +164,10 @@ class TestEntityRegeneratorKernel extends Kernel
                 'utf8' => true,
             ],
             'http_method_override' => false,
+            'handle_all_throwables' => true,
+            'php_errors' => [
+                'log' => true,
+            ],
         ]);
 
         $dbal = [
@@ -166,18 +175,29 @@ class TestEntityRegeneratorKernel extends Kernel
             'url' => 'sqlite:///fake',
         ];
 
-        $c->prependExtensionConfig('doctrine', [
-            'dbal' => $dbal,
-            'orm' => [
-                'mappings' => [
-                    'EntityRegenerator' => [
-                        'is_bundle' => false,
-                        'dir' => '%kernel.project_dir%/src/Entity',
-                        'prefix' => 'Symfony\Bundle\MakerBundle\Tests\tmp\current_project\src\Entity',
-                        'alias' => 'EntityRegeneratorApp',
-                    ],
+        $orm = [
+            'mappings' => [
+                'EntityRegenerator' => [
+                    'is_bundle' => false,
+                    'dir' => '%kernel.project_dir%/src/Entity',
+                    'prefix' => 'Symfony\Bundle\MakerBundle\Tests\tmp\current_project\src\Entity',
+                    'alias' => 'EntityRegeneratorApp',
+                    'type' => 'attribute',
                 ],
             ],
+            'controller_resolver' => [
+                'auto_mapping' => false,
+            ],
+        ];
+
+        /* @legacy Remove conditional when doctrine/persistence <3.1 are no longer supported. */
+        if (class_exists(RuntimeReflectionProperty::class)) {
+            $orm['enable_lazy_ghost_objects'] = true;
+        }
+
+        $c->prependExtensionConfig('doctrine', [
+            'dbal' => $dbal,
+            'orm' => $orm,
         ]);
     }
 
@@ -211,6 +231,10 @@ class TestXmlEntityRegeneratorKernel extends Kernel
                 'utf8' => true,
             ],
             'http_method_override' => false,
+            'handle_all_throwables' => true,
+            'php_errors' => [
+                'log' => true,
+            ],
         ]);
 
         $dbal = [
@@ -218,20 +242,30 @@ class TestXmlEntityRegeneratorKernel extends Kernel
             'url' => 'sqlite:///fake',
         ];
 
-        $c->prependExtensionConfig('doctrine', [
-            'dbal' => $dbal,
-            'orm' => [
-                'auto_generate_proxy_classes' => true,
-                'mappings' => [
-                    'EntityRegenerator' => [
-                        'is_bundle' => false,
-                        'type' => 'xml',
-                        'dir' => '%kernel.project_dir%/config/doctrine',
-                        'prefix' => 'Symfony\Bundle\MakerBundle\Tests\tmp\current_project_xml\src\Entity',
-                        'alias' => 'EntityRegeneratorApp',
-                    ],
+        $orm = [
+            'auto_generate_proxy_classes' => true,
+            'mappings' => [
+                'EntityRegenerator' => [
+                    'is_bundle' => false,
+                    'type' => 'xml',
+                    'dir' => '%kernel.project_dir%/config/doctrine',
+                    'prefix' => 'Symfony\Bundle\MakerBundle\Tests\tmp\current_project_xml\src\Entity',
+                    'alias' => 'EntityRegeneratorApp',
                 ],
             ],
+            'controller_resolver' => [
+                'auto_mapping' => false,
+            ],
+        ];
+
+        /* @legacy Remove conditional when doctrine/persistence <3.1 are no longer supported. */
+        if (class_exists(RuntimeReflectionProperty::class)) {
+            $orm['enable_lazy_ghost_objects'] = true;
+        }
+
+        $c->prependExtensionConfig('doctrine', [
+            'dbal' => $dbal,
+            'orm' => $orm,
         ]);
     }
 

@@ -62,7 +62,7 @@ class MakeMigrationTest extends MakerTestCase
                 // see that the exact filename is in the output
                 $iterator = $finder->getIterator();
                 $iterator->rewind();
-                $this->assertStringContainsString(sprintf('%s/%s', $migrationsDirectoryPath, $iterator->current()->getFilename()), $output);
+                $this->assertStringContainsString(\sprintf('%s/%s', $migrationsDirectoryPath, $iterator->current()->getFilename()), $output);
             }),
         ];
 
@@ -129,6 +129,17 @@ class MakeMigrationTest extends MakerTestCase
                 ]);
 
                 $this->assertStringNotContainsString('Success', $output);
+            }),
+        ];
+
+        yield 'it_generates_a_formatted_migration' => [$this->createMakeMigrationTest()
+            ->addRequiredPackageVersion('doctrine/doctrine-migrations-bundle', '>=3')
+            ->run(function (MakerTestRunner $runner) {
+                $runner->runConsole('make:migration', [], '--formatted');
+
+                $output = $runner->runMaker([/* no input */]);
+
+                $this->assertStringContainsString('Success', $output);
             }),
         ];
     }

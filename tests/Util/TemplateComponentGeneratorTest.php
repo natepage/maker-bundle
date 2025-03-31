@@ -12,7 +12,9 @@
 namespace Symfony\Bundle\MakerBundle\Tests\Util;
 
 use PHPUnit\Framework\TestCase;
-use Symfony\Bundle\MakerBundle\Util\PhpCompatUtil;
+use Symfony\Bundle\MakerBundle\MakerBundle;
+use Symfony\Bundle\MakerBundle\Util\ClassSource\Model\ClassData;
+use Symfony\Bundle\MakerBundle\Util\NamespacesHelper;
 use Symfony\Bundle\MakerBundle\Util\TemplateComponentGenerator;
 
 /**
@@ -22,7 +24,7 @@ class TemplateComponentGeneratorTest extends TestCase
 {
     public function testRouteAttributes(): void
     {
-        $generator = new TemplateComponentGenerator($this->createMock(PhpCompatUtil::class));
+        $generator = new TemplateComponentGenerator(false, false, new NamespacesHelper());
 
         $expected = "    #[Route('/', name: 'app_home')]\n";
 
@@ -34,7 +36,7 @@ class TemplateComponentGeneratorTest extends TestCase
      */
     public function testRouteMethods(string $expected, array $methods): void
     {
-        $generator = new TemplateComponentGenerator($this->createMock(PhpCompatUtil::class));
+        $generator = new TemplateComponentGenerator(false, false, new NamespacesHelper());
 
         self::assertSame($expected, $generator->generateRouteForControllerMethod(
             '/',
@@ -54,7 +56,7 @@ class TemplateComponentGeneratorTest extends TestCase
      */
     public function testRouteIndentation(string $expected): void
     {
-        $generator = new TemplateComponentGenerator($this->createMock(PhpCompatUtil::class));
+        $generator = new TemplateComponentGenerator(false, false, new NamespacesHelper());
 
         self::assertSame($expected, $generator->generateRouteForControllerMethod(
             '/',
@@ -74,7 +76,7 @@ class TemplateComponentGeneratorTest extends TestCase
      */
     public function testRouteTrailingNewLine(string $expected): void
     {
-        $generator = new TemplateComponentGenerator($this->createMock(PhpCompatUtil::class));
+        $generator = new TemplateComponentGenerator(false, false, new NamespacesHelper());
 
         self::assertSame($expected, $generator->generateRouteForControllerMethod(
             '/',
@@ -88,5 +90,42 @@ class TemplateComponentGeneratorTest extends TestCase
     public function routeTrailingNewLineDataProvider(): \Generator
     {
         yield ["#[Route('/', name: 'app_home')]", true];
+    }
+
+    /**
+     * @dataProvider finalClassDataProvider
+     */
+    public function testGetFinalClassDeclaration(bool $finalClass, bool $finalEntity, bool $isEntity, string $expectedResult): void
+    {
+        $generator = new TemplateComponentGenerator($finalClass, $finalEntity, new NamespacesHelper());
+
+        $classData = ClassData::create(MakerBundle::class, rootNamespace: 'App\\', isEntity: $isEntity);
+
+        $generator->configureClass($classData);
+
+        self::assertSame(\sprintf('%sclass MakerBundle', $expectedResult), $classData->getClassDeclaration());
+    }
+
+    public function finalClassDataProvider(): \Generator
+    {
+        yield 'Not Final Class' => [false, false, false, ''];
+        yield 'Not Final Class w/ Entity' => [false, true, false, ''];
+        yield 'Final Class' => [true, false, false, 'final '];
+        yield 'Final Class w/ Entity' => [true, true, false, 'final '];
+        yield 'Not Final Entity' => [false, false, true, ''];
+        yield 'Not Final Entity w/ Class' => [true, false, true, ''];
+        yield 'Final Entity' => [false, true, true, 'final '];
+        yield 'Final Entity w/ Class' => [true, true, true, 'final '];
+    }
+
+    public function testConfiguresClassDataWithRootNamespace(): void
+    {
+        $generator = new TemplateComponentGenerator(false, false, new NamespacesHelper(['root' => 'MakerTest']));
+
+        $classData = ClassData::create(MakerBundle::class, 'App\\');
+
+        $generator->configureClass($classData);
+
+        self::assertSame('MakerTest\Symfony\Bundle\MakerBundle', $classData->getNamespace());
     }
 }

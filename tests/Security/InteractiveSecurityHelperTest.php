@@ -13,6 +13,9 @@ namespace Symfony\Bundle\MakerBundle\Tests\Security;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\MakerBundle\Security\InteractiveSecurityHelper;
+use Symfony\Bundle\MakerBundle\Security\Model\Authenticator;
+use Symfony\Bundle\MakerBundle\Security\Model\AuthenticatorType;
+use Symfony\Bundle\MakerBundle\Util\NamespacesHelper;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 class InteractiveSecurityHelperTest extends TestCase
@@ -28,7 +31,7 @@ class InteractiveSecurityHelperTest extends TestCase
             ->method('choice')
             ->willReturn($expectedFirewallName);
 
-        $helper = new InteractiveSecurityHelper();
+        $helper = new InteractiveSecurityHelper(new NamespacesHelper());
         $this->assertEquals(
             $expectedFirewallName,
             $helper->guessFirewallName($io, $securityData)
@@ -86,7 +89,7 @@ class InteractiveSecurityHelperTest extends TestCase
             ->method('ask')
             ->willReturn($expectedUserClass);
 
-        $helper = new InteractiveSecurityHelper();
+        $helper = new InteractiveSecurityHelper(new NamespacesHelper());
         $this->assertEquals(
             $expectedUserClass,
             $helper->guessUserClass($io, $securityData)
@@ -123,10 +126,10 @@ class InteractiveSecurityHelperTest extends TestCase
         $io = $this->createMock(SymfonyStyle::class);
         $io->expects($this->exactly(true === $fieldAutomaticallyGuessed ? 0 : 1))
             ->method('choice')
-            ->with(sprintf('Which field on your <fg=yellow>%s</> class will people enter when logging in?', $class), $choices, 'username')
+            ->with(\sprintf('Which field on your <fg=yellow>%s</> class will people enter when logging in?', $class), $choices, 'username')
             ->willReturn($expectedUsernameField);
 
-        $interactiveSecurityHelper = new InteractiveSecurityHelper();
+        $interactiveSecurityHelper = new InteractiveSecurityHelper(new NamespacesHelper());
         $this->assertEquals(
             $expectedUsernameField,
             $interactiveSecurityHelper->guessUserNameField($io, $class, $providers)
@@ -180,10 +183,10 @@ class InteractiveSecurityHelperTest extends TestCase
         $io = $this->createMock(SymfonyStyle::class);
         $io->expects($this->exactly(true === $fieldAutomaticallyGuessed ? 0 : 1))
             ->method('choice')
-            ->with(sprintf('Which field on your <fg=yellow>%s</> class holds the email address?', $class), $choices, null)
+            ->with(\sprintf('Which field on your <fg=yellow>%s</> class holds the email address?', $class), $choices, null)
             ->willReturn($expectedEmailField);
 
-        $interactiveSecurityHelper = new InteractiveSecurityHelper();
+        $interactiveSecurityHelper = new InteractiveSecurityHelper(new NamespacesHelper());
         $this->assertEquals(
             $expectedEmailField,
             $interactiveSecurityHelper->guessEmailField($io, $class)
@@ -206,6 +209,73 @@ class InteractiveSecurityHelperTest extends TestCase
         ];
     }
 
+    /** @dataProvider authenticatorClassProvider */
+    public function testGetAuthenticatorsFromConfig(array $firewalls, array $expectedResults): void
+    {
+        $helper = new InteractiveSecurityHelper(new NamespacesHelper());
+        $result = $helper->getAuthenticatorsFromConfig($firewalls);
+
+        self::assertEquals($expectedResults, $result);
+    }
+
+    public function authenticatorClassProvider(): \Generator
+    {
+        yield 'Only Custom Authenticator' => [
+            [
+                'main' => [
+                    'lazy' => true,
+                    'custom_authenticator' => 'App\Security\CustomAuthenticator',
+                    'provider' => 'a_user_provider',
+                ],
+            ],
+            [new Authenticator(AuthenticatorType::CUSTOM, 'main', 'App\Security\CustomAuthenticator')],
+        ];
+
+        yield 'Only Form Login' => [
+            [
+                'main' => [
+                    'form_login' => ['login_path' => 'some_path'],
+                    'provider' => 'a_user_provider',
+                ],
+            ],
+            [new Authenticator(AuthenticatorType::FORM_LOGIN, 'main')],
+        ];
+
+        yield 'Form & Json Login' => [
+            [
+                'main' => [
+                    'form_login' => ['login_path' => 'some_path'],
+                    'json_login' => ['login_path' => 'some_path'],
+                    'provider' => 'a_user_provider',
+                ],
+            ],
+            [
+                new Authenticator(AuthenticatorType::FORM_LOGIN, 'main'),
+                new Authenticator(AuthenticatorType::JSON_LOGIN, 'main')],
+        ];
+
+        yield 'Native & Custom' => [
+            [
+                'main' => [
+                    'form_login' => ['login_path' => 'some_path'],
+                    'json_login' => ['login_path' => 'some_path'],
+                    'custom_authenticator' => 'App\Security\CustomAuthenticator',
+                    'provider' => 'a_user_provider',
+                ],
+            ],
+            [
+                new Authenticator(AuthenticatorType::FORM_LOGIN, 'main'),
+                new Authenticator(AuthenticatorType::JSON_LOGIN, 'main'),
+                new Authenticator(AuthenticatorType::CUSTOM, 'main', 'App\Security\CustomAuthenticator'),
+            ],
+        ];
+
+        yield 'No Authenticators' => [
+            ['provider' => 'a_user_provider'],
+            [],
+        ];
+    }
+
     /**
      * @dataProvider guessPasswordSetterTest
      */
@@ -215,10 +285,10 @@ class InteractiveSecurityHelperTest extends TestCase
         $io = $this->createMock(SymfonyStyle::class);
         $io->expects($this->exactly(true === $automaticallyGuessed ? 0 : 1))
             ->method('choice')
-            ->with(sprintf('Which method on your <fg=yellow>%s</> class can be used to set the encoded password (e.g. setPassword())?', $class), $choices, null)
+            ->with(\sprintf('Which method on your <fg=yellow>%s</> class can be used to set the encoded password (e.g. setPassword())?', $class), $choices, null)
             ->willReturn($expectedPasswordSetter);
 
-        $interactiveSecurityHelper = new InteractiveSecurityHelper();
+        $interactiveSecurityHelper = new InteractiveSecurityHelper(new NamespacesHelper());
         $this->assertEquals(
             $expectedPasswordSetter,
             $interactiveSecurityHelper->guessPasswordSetter($io, $class)
@@ -250,10 +320,10 @@ class InteractiveSecurityHelperTest extends TestCase
         $io = $this->createMock(SymfonyStyle::class);
         $io->expects($this->exactly(true === $automaticallyGuessed ? 0 : 1))
             ->method('choice')
-            ->with(sprintf('Which method on your <fg=yellow>%s</> class can be used to get the email address (e.g. getEmail())?', $class), $choices, null)
+            ->with(\sprintf('Which method on your <fg=yellow>%s</> class can be used to get the email address (e.g. getEmail())?', $class), $choices, null)
             ->willReturn($expectedEmailGetter);
 
-        $interactiveSecurityHelper = new InteractiveSecurityHelper();
+        $interactiveSecurityHelper = new InteractiveSecurityHelper(new NamespacesHelper());
         $this->assertEquals(
             $expectedEmailGetter,
             $interactiveSecurityHelper->guessEmailGetter($io, $class, $emailAttribute)

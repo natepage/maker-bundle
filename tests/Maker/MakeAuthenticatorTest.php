@@ -16,6 +16,9 @@ use Symfony\Bundle\MakerBundle\Test\MakerTestCase;
 use Symfony\Bundle\MakerBundle\Test\MakerTestRunner;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
+/**
+ * @group legacy
+ */
 class MakeAuthenticatorTest extends MakerTestCase
 {
     protected function getMakerClass(): string
@@ -305,6 +308,7 @@ class MakeAuthenticatorTest extends MakerTestCase
 
                 $this->assertEquals('%kernel.secret%', $firewallMain['remember_me']['secret']);
                 $this->assertEquals('604800', $firewallMain['remember_me']['lifetime']);
+                $this->assertArrayNotHasKey('always_remember_me', $firewallMain['remember_me']);
             }),
         ];
 

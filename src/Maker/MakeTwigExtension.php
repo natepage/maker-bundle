@@ -37,14 +37,14 @@ final class MakeTwigExtension extends AbstractMaker
 
     public static function getCommandDescription(): string
     {
-        return 'Creates a new Twig extension with its runtime class';
+        return 'Create a new Twig extension with its runtime class';
     }
 
     public function configureCommand(Command $command, InputConfiguration $inputConfig): void
     {
         $command
             ->addArgument('name', InputArgument::OPTIONAL, 'The name of the Twig extension class (e.g. <fg=yellow>AppExtension</>)')
-            ->setHelp(file_get_contents(__DIR__.'/../Resources/help/MakeTwigExtension.txt'))
+            ->setHelp($this->getHelpFileContents('MakeTwigExtension.txt'))
         ;
     }
 
@@ -54,13 +54,13 @@ final class MakeTwigExtension extends AbstractMaker
 
         $extensionClassNameDetails = $generator->createClassNameDetails(
             $name,
-            'Twig\\Extension\\',
+            \sprintf('%s\\Extension\\', $generator->getNamespacesHelper()->getTwigNamespace()),
             'Extension'
         );
 
         $runtimeClassNameDetails = $generator->createClassNameDetails(
             $name,
-            'Twig\\Runtime\\',
+            \sprintf('%s\\Runtime\\', $generator->getNamespacesHelper()->getTwigNamespace()),
             'Runtime'
         );
 
